@@ -1,2 +1,5 @@
 /venv/
 .idea
+/build/
+/dist/
+/selenium_po.egg-info/

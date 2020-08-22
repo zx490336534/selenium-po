@@ -9,9 +9,10 @@ from setuptools import setup
 setup(
     name='selenium-po',
     version='1.0.0',
-    description='',
+    description='使用yaml实现selenium的po',
     author='zhong xin',
     author_email='490336534@qq.com',
     url='https://github.com/zx490336534/selenium-po',
     packages=['selenium_po'],
+    python_requires='>=3.6'
 )

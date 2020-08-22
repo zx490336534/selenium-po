@@ -93,15 +93,16 @@ class ElementOperator:
         driver = driver.lower()
         try:
             socket.setdefaulttimeout(50)
-            if driver == 'chrome':
-                chrome_option = Options()
-                # chrome_option.add_argument('--headless')
-                self.driver = webdriver.Chrome(chrome_options=chrome_option)
-            elif driver == 'ie':
-                ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True
-                ie_options['ignoreProtectedModeSettings'] = True  # 忽略浏览器缩放设置
-                ie_options['ignoreZoomSetting'] = True  # 启动带有自定义设置的IE浏览器
-                self.driver = webdriver.Ie(capabilities=ie_options)
+            if not self.driver:
+                if driver == 'chrome':
+                    chrome_option = Options()
+                    # chrome_option.add_argument('--headless')
+                    self.driver = webdriver.Chrome(chrome_options=chrome_option)
+                elif driver == 'ie':
+                    ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True
+                    ie_options['ignoreProtectedModeSettings'] = True  # 忽略浏览器缩放设置
+                    ie_options['ignoreZoomSetting'] = True  # 启动带有自定义设置的IE浏览器
+                    self.driver = webdriver.Ie(capabilities=ie_options)
 
             self.wait_for(10)
             self.driver.get(url)

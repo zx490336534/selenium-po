@@ -14,12 +14,14 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='selenium-po',
-    version='1.0.0',
+    version='1.0.2',
     description='使用yaml实现selenium的po',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    packages=find_packages(),
     author='zhong xin',
     author_email='490336534@qq.com',
     url='https://github.com/zx490336534/selenium-po',
-    packages=['selenium_po'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

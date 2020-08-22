@@ -7,7 +7,7 @@
 from setuptools import setup
 
 setup(
-    name='selenium_po',
+    name='selenium-po',
     version='1.0.0',
     description='',
     author='zhong xin',

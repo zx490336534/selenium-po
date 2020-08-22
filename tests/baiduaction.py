@@ -3,28 +3,24 @@
 # @Author  : zhongxin
 # @Email   : 490336534@qq.com
 # @File    : baiduaction.py
+import os
 import time
 from selenium_po.elementoperator import ElementOperator
 
+path = os.path.dirname(os.path.abspath(__file__))
 
-class BaiDuAction(ElementOperator):
-    def __init__(self, path="/Users/zhongxin/PycharmProjects/selenium-po/selenium_po/tests/pages.yaml",
-                 file_name='index', driver=None):
-        super(BaiDuAction, self).__init__(path, file_name, driver)
 
-    def input(self, msg):
-        self.find_element(self.kw).clear()
-        self.find_element(self.kw).send_keys(msg)
-
-    def search(self):
-        self.find_element(self.su).click()
+class BaiDuIndexAction(ElementOperator):
+    def __init__(self, path=f"{path}/pages.yaml", file_name='index', driver=None):
+        super(BaiDuIndexAction, self).__init__(path, file_name, driver)
+        self.url = 'http://www.baidu.com'
 
 
 if __name__ == '__main__':
-    baidu = BaiDuAction()
-    baidu.open('http://www.baidu.com', baidu.kw)
+    baidu = BaiDuIndexAction()
+    baidu.open(baidu.url, baidu.index_input)
+    baidu.input(baidu.index_input, "python")
+    baidu.click(baidu.index_search)
     time.sleep(2)
-    baidu.input("python")
-    baidu.search()
     baidu.screenshot_pic("1.png")
     baidu.close()

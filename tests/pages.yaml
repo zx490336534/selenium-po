@@ -3,5 +3,11 @@ pages:
       pageName: index
       desc: 首页
       locators:
-        - {desc: "搜索栏",type: "id",value: "kw",timeout: 3, name: "kw"}
-        - {desc: "查询按钮",type: "id",value: "su",timeout: 3, name: "su"}
+        - {desc: "搜索栏",type: "id",value: "kw",timeout: 3, name: "index_input"}
+        - {desc: "查询按钮",type: "id",value: "su",timeout: 3, name: "index_search"}
+  - page:
+      pageName: news
+      desc: 新闻
+      locators:
+        - {desc: "搜索栏",type: "id",value: "ww",timeout: 3, name: "news_input"}
+        - {desc: "查询按钮",type: "id",value: "s_btn_wr",timeout: 3, name: "news_search"}

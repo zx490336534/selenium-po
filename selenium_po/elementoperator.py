@@ -225,3 +225,14 @@ class ElementOperator:
     def screenshot_pic(self, file_name):
         self.driver.save_screenshot(file_name)
         return file_name
+
+    def input(self, locator, msg):
+        ele = self.find_element(locator)
+        print(f"往「{locator.desc}」输入「{msg}」")
+        ele.clear()
+        ele.send_keys(msg)
+
+    def click(self, locator):
+        ele = self.find_element(locator)
+        print(f"点击「{locator.desc}」")
+        ele.click()

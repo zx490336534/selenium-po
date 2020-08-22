@@ -4,7 +4,7 @@
 # @Email   : 490336534@qq.com
 # @File    : baiduaction.py
 import time
-from selenium_po.src.elementoperator import ElementOperator
+from selenium_po.elementoperator import ElementOperator
 
 
 class BaiDuAction(ElementOperator):

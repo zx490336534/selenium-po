@@ -8,7 +8,7 @@ from selenium_po.src.elementoperator import ElementOperator
 
 
 class BaiDuAction(ElementOperator):
-    def __init__(self, path="/Users/zhongxin/PycharmProjects/selenium-po/selenium_po/test/pages.yaml",
+    def __init__(self, path="/Users/zhongxin/PycharmProjects/selenium-po/selenium_po/tests/pages.yaml",
                  file_name='index', driver=None):
         super(BaiDuAction, self).__init__(path, file_name, driver)
 

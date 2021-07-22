@@ -8,7 +8,9 @@ import socket
 import time
 
 import yaml
+from appium.webdriver.common.mobileby import MobileBy
 from selenium import webdriver
+from appium import webdriver as app_webdriver
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.chrome.options import Options
@@ -88,46 +90,53 @@ class ElementOperator:
             else:
                 return self[item]
 
-    def open(self, url, locator, frame_locator=None, driver='chrome'):
+    def open(self, url, locator, frame_locator=None, driver='chrome', desired_caps=None):
         flag = False
         driver = driver.lower()
-        try:
-            socket.setdefaulttimeout(50)
-            if not self.driver:
-                if driver == 'chrome':
-                    chrome_option = Options()
-                    # chrome_option.add_argument('--headless')
-                    self.driver = webdriver.Chrome(chrome_options=chrome_option)
-                elif driver == 'ie':
-                    ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True
-                    ie_options['ignoreProtectedModeSettings'] = True  # 忽略浏览器缩放设置
-                    ie_options['ignoreZoomSetting'] = True  # 启动带有自定义设置的IE浏览器
-                    self.driver = webdriver.Ie(capabilities=ie_options)
-
-            self.wait_for(10)
-            self.driver.get(url)
+        if driver in ['chrome', 'ie']:
             try:
-                self.driver.maximize_window()
+                socket.setdefaulttimeout(50)
+                if not self.driver:
+                    if driver == 'chrome':
+                        chrome_option = Options()
+                        # chrome_option.add_argument('--headless')
+                        self.driver = webdriver.Chrome(chrome_options=chrome_option)
+                    elif driver == 'ie':
+                        ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True
+                        ie_options['ignoreProtectedModeSettings'] = True  # 忽略浏览器缩放设置
+                        ie_options['ignoreZoomSetting'] = True  # 启动带有自定义设置的IE浏览器
+                        self.driver = webdriver.Ie(capabilities=ie_options)
+                self.driver.get(url)
+                try:
+                    self.driver.maximize_window()
+                except Exception as e:
+                    print(f"浏览器最大化失败:{e}")
+                if frame_locator:
+                    self.wait_element_visible(frame_locator)
+                    self.switch_frame(frame_locator)
+                self.wait_element_visible(locator)
+                flag = True
             except Exception as e:
-                print(f"浏览器最大化失败:{e}")
-            if frame_locator:
-                self.wait_element_visible(frame_locator)
-                self.switch_frame(frame_locator)
-            self.wait_element_visible(locator)
-            flag = True
-        except Exception as e:
-            raise Exception(e)
-        if not flag:
-            raise WebDriverException(f"打开浏览器进入{url}失败")
+                raise Exception(e)
+            if not flag:
+                raise WebDriverException(f"打开浏览器进入{url}失败")
+        else:
+            if driver == 'android':
+                # url = 'http://127.0.0.1:4723/wd/hub'
+                self.driver = app_webdriver.Remote(url, desired_caps)
+        self.wait_for(10)
         return self.driver
 
     def close(self):
         if self.driver:
             try:
                 self.driver.close()
+            except Exception as e:
+                print(f"close浏览器失败：{e}")
+            try:
                 self.driver.quit()
             except Exception as e:
-                print(f"关闭浏览器失败：{e}")
+                print(f"quit浏览器失败：{e}")
             finally:
                 self.driver = None
 
@@ -168,6 +177,17 @@ class ElementOperator:
             "tag_name": By.TAG_NAME,
             "class_name": By.CLASS_NAME,
             "css_selector": By.CSS_SELECTOR,
+            "ios_predicate": MobileBy.IOS_PREDICATE,
+            "ios_uiautomation": MobileBy.IOS_UIAUTOMATION,
+            "ios_class_chain": MobileBy.IOS_CLASS_CHAIN,
+            "android_uiautomator": MobileBy.ANDROID_UIAUTOMATOR,
+            "android_viewtag": MobileBy.ANDROID_VIEWTAG,
+            "android_data_matcher": MobileBy.ANDROID_DATA_MATCHER,
+            "android_view_matcher": MobileBy.ANDROID_VIEW_MATCHER,
+            "windows_ui_automation": MobileBy.WINDOWS_UI_AUTOMATION,
+            "accessibility_id": MobileBy.ACCESSIBILITY_ID,
+            "image": MobileBy.IMAGE,
+            "custom": MobileBy.CUSTOM,
         }
         locator_t = (type_dict[locator.by_type], locator.element)
         return locator_t
@@ -205,7 +225,10 @@ class ElementOperator:
             try:
                 locator_t = self._get_locator_tuple(locator)
                 web_element = self.driver.find_element(*locator_t)
-                self.height_light(web_element)
+                try:
+                    self.height_light(web_element)
+                except Exception:
+                    pass
                 return web_element
             except NoSuchElementException as n:
                 time.sleep(0.5)

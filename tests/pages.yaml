@@ -3,11 +3,16 @@ pages:
       pageName: index
       desc: 首页
       locators:
-        - {desc: "搜索栏",type: "id",value: "kw",timeout: 3, name: "index_input"}
-        - {desc: "查询按钮",type: "id",value: "su",timeout: 3, name: "index_search"}
+        - { desc: "搜索栏",type: "id",value: "kw",timeout: 3, name: "index_input" }
+        - { desc: "查询按钮",type: "id",value: "su",timeout: 3, name: "index_search" }
   - page:
       pageName: news
       desc: 新闻
       locators:
-        - {desc: "搜索栏",type: "id",value: "ww",timeout: 3, name: "news_input"}
-        - {desc: "查询按钮",type: "id",value: "s_btn_wr",timeout: 3, name: "news_search"}
+        - { desc: "搜索栏",type: "id",value: "ww",timeout: 3, name: "news_input" }
+        - { desc: "查询按钮",type: "id",value: "s_btn_wr",timeout: 3, name: "news_search" }
+  - page:
+      pageName: lemon
+      desc: 柠檬班app
+      locators:
+        - { desc: "就业信息",type: "xpath",value: "//*[contains(@text,'就业')]",timeout: 3, name: "employment_info" }

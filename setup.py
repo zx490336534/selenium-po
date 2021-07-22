@@ -14,7 +14,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='selenium-po',
-    version='0.0.3',
+    version='0.0.4',
     description='使用yaml实现selenium的po',
     long_description=long_description,
     long_description_content_type='text/markdown',

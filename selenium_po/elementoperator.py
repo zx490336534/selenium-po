@@ -90,16 +90,30 @@ class ElementOperator:
             else:
                 return self[item]
 
-    def open(self, url, locator, frame_locator=None, driver='chrome', desired_caps=None):
+    def open(self, url, locator, frame_locator=None, driver='chrome', desired_caps=None, deviceName='iPhone X'):
+        """
+
+        :param url: 打开的地址
+        :param locator: 确认打开成功的元素
+        :param frame_locator: 需要切换的frame
+        :param driver: 浏览器驱动
+        :param desired_caps: appium连接信息
+        :param deviceName: h5测试设备型号
+        :return:
+        """
         flag = False
         driver = driver.lower()
-        if driver in ['chrome', 'ie']:
+        if driver in ['chrome', 'ie', 'chrome-h5']:
             try:
                 socket.setdefaulttimeout(50)
                 if not self.driver:
                     if driver == 'chrome':
                         chrome_option = Options()
                         # chrome_option.add_argument('--headless')
+                        self.driver = webdriver.Chrome(chrome_options=chrome_option)
+                    elif driver == 'chrome-h5':
+                        chrome_option = Options()
+                        chrome_option.add_experimental_option('mobileEmulation', {'deviceName': deviceName})
                         self.driver = webdriver.Chrome(chrome_options=chrome_option)
                     elif driver == 'ie':
                         ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True

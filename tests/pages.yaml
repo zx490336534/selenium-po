@@ -16,3 +16,8 @@ pages:
       desc: 柠檬班app
       locators:
         - { desc: "就业信息",type: "xpath",value: "//*[contains(@text,'就业')]",timeout: 3, name: "employment_info" }
+  - page:
+      pageName: wy
+      desc: 微医
+      locators:
+        - { desc: "挂号", type: "xpath",value: '//*[@id="app"]//p[contains(text(),"挂号")]',timeout: 3,name: "wrap" }

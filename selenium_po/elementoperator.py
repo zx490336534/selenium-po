@@ -274,3 +274,15 @@ class ElementOperator:
         ele = self.find_element(locator)
         print(f"点击「{locator.desc}」")
         ele.click()
+
+    def get_text(self, locator):
+        ele = self.find_element(locator)
+        print(f"获取「{locator.desc}」")
+        return ele.text
+
+    def refresh(self):
+        """
+        刷新页面
+        :return:
+        """
+        self.driver.refresh()

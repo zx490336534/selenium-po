@@ -3,18 +3,22 @@
 # @Author  : zhongxin
 # @Email   : 490336534@qq.com
 # @File    : elementoperator.py
+import base64
 import os
+import random
 import socket
 import time
 
 import yaml
+from PIL import Image
 from appium.webdriver.common.mobileby import MobileBy
 from selenium import webdriver
 from appium import webdriver as app_webdriver
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
-from selenium.webdriver import DesiredCapabilities
+from selenium.webdriver import DesiredCapabilities, ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -42,6 +46,7 @@ class ElementOperator:
         self.driver = driver
         self.time_out = 10
         self.path = path
+        self.url = '/'
         self.file_name = file_name or os.path.split(path)[-1]
         self.data_dict = self._parse_yaml()
         self._locator_map = self.read_yaml()
@@ -75,7 +80,7 @@ class ElementOperator:
             for locator in locators_list:
                 by_type = locator["type"]
                 element = locator["value"]
-                wait_sec = int(locator["timeout"])
+                wait_sec = int(locator.get("timeout", 3))
                 locator_name = locator["name"]
                 desc = f"{page_desc}_{locator['desc']}"
                 tmp = Locator(element, wait_sec, by_type, locator_name, desc)
@@ -114,6 +119,7 @@ class ElementOperator:
                     elif driver == 'chrome-h5':
                         chrome_option = Options()
                         chrome_option.add_experimental_option('mobileEmulation', {'deviceName': deviceName})
+                        chrome_option.add_experimental_option('w3c', False)
                         self.driver = webdriver.Chrome(chrome_options=chrome_option)
                     elif driver == 'ie':
                         ie_options = DesiredCapabilities.INTERNETEXPLORER  # 将忽略IE保护模式的参数设置为True
@@ -264,13 +270,290 @@ class ElementOperator:
         self.driver.save_screenshot(file_name)
         return file_name
 
-    def input(self, locator, msg):
-        ele = self.find_element(locator)
+    def input(self, locator, msg, many=False, num=0):
+        if many:
+            ele = self.find_elements(locator)[num]
+        else:
+            ele = self.find_element(locator)
         print(f"往「{locator.desc}」输入「{msg}」")
         ele.clear()
+        time.sleep(0.2)
         ele.send_keys(msg)
+        time.sleep(0.2)
 
-    def click(self, locator):
+    def send_keys(self, locator, key):
+        """
+
+        :param locator: 元素对象
+        :param key:
+            * BACK_SPACE 后退
+            * SPACE 空格
+            * ENTER 回车
+        :return:
+        """
         ele = self.find_element(locator)
+        ele.send_keys(getattr(Keys, key.upper()))
+        time.sleep(0.2)
+
+    def click(self, locator, many=False, num=0):
+        if many:
+            ele = self.find_elements(locator)[num]
+        else:
+            ele = self.find_element(locator)
         print(f"点击「{locator.desc}」")
         ele.click()
+        time.sleep(0.2)
+
+    def get_text(self, locator, many=False, num=0):
+        if many:
+            ele = self.find_elements(locator)[num]
+        else:
+            ele = self.find_element(locator)
+        print(f"获取「{locator.desc}」")
+        return ele.text
+
+    def refresh(self):
+        """
+        刷新页面
+        :return:
+        """
+        self.driver.refresh()
+        time.sleep(1)
+
+    def scroll_to(self, num):
+        """
+        下拉至一定位置
+        :param num:下拉的位置
+        :return:
+        """
+        js = f'window.scrollTo(0,{100 * num})'
+        self.driver.execute_script(js)
+
+    def back(self):
+        """
+        返回上一页
+        :return:
+        """
+        self.driver.back()
+
+    def forward(self):
+        """
+        返回下一页
+        :return:
+        """
+        self.driver.forward()
+
+    def get_cookies(self):
+        """
+        获取cookies
+        :return:
+        """
+        cookies = self.driver.get_cookies()
+        return cookies
+
+    def add_cookie(self, cookie_dict):
+        """
+        添加cookie
+        :return:
+        """
+        self.driver.add_cookie(cookie_dict)
+
+    def delete_all_cookies(self):
+        """
+        清除全部cookie
+        :return:
+        """
+        self.driver.delete_all_cookies()
+
+    def join_url(self, base_url, url):
+        if not base_url.endswith('/'):
+            base_url += '/'
+        if url.startswith('/'):
+            url.replace('/', '', 1)
+        return base_url + url
+
+    def open_url(self, url):
+        self.driver.get(url)
+
+    def add_attribute(self, locator, attributeName, value):
+        """
+        向页面标签添加新属性
+        """
+        ele = self.find_element(locator)
+        js = "arguments[0].%s=arguments[1]" % attributeName
+        self.driver.execute_script(js, ele, value)
+
+    def set_attribute(self, locator, attributeName, value):
+        """
+        设置页面对象的属性值
+        """
+        ele = self.find_element(locator)
+        js = "arguments[0].setAttribute(arguments[1],arguments[2])"
+        self.driver.execute_script(js, ele, attributeName, value)
+
+    def get_attribute(self, locator, attributeName):
+        """
+        获取页面对象的属性值
+        """
+        ele = self.find_element(locator)
+        return ele.get_attribute(attributeName)
+
+    def remove_attribute(self, locator, attributeName):
+        """
+        删除页面属性
+        """
+        ele = self.find_element(locator)
+        js = "arguments[0].removeAttribute(arguments[1])"
+        self.driver.execute_script(js, ele, attributeName)
+
+    def alert_sleep(self, t, msg=None):
+        if not msg:
+            msg = f'等待{t}秒'
+        self.driver.execute_script(f"window.alert('{msg}');")
+        time.sleep(t)
+        try:
+            alert = self.driver.switch_to.alert
+            alert.accept()
+        except Exception:
+            pass
+
+
+class AccessCode(object):
+    """
+    极验操作
+    """
+
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 20)
+        self.border = 6
+
+    def save_img(self, img_name, class_name):
+        """
+
+        :param img_name: 保存图片的名字
+        :param class_name: 需要保存的canvas的className
+        :return:
+        """
+        getImgJS = 'return document.getElementsByClassName("' + class_name + '")[0].toDataURL("image/png");'
+        img = self.driver.execute_script(getImgJS)
+        base64_data_img = img[img.find(',') + 1:]
+        image_base = base64.b64decode(base64_data_img)
+        file = open(img_name, 'wb')
+        file.write(image_base)
+        file.close()
+
+    def get_track(self, distance):
+        """
+        根据偏移量获取移动轨迹
+        :param distance: 偏移量
+        :return: 移动轨迹
+        """
+        # 移动轨迹
+        track = []
+        # 当前位移
+        current = 0
+        # 减速阈值
+        mid = distance * 4 / 5
+        # 计算间隔
+        t = 0.2
+        # 初速度
+        v = 0
+        while current < distance:
+            if current < mid:
+                # 加速度为正2
+                a = 2
+            else:
+                # 加速度为负3
+                a = -3
+            # 初速度v0
+            v0 = v
+            # 当前速度v = v0 + at
+            v = v0 + a * t
+            # 移动距离x = v0t + 1/2 * a * t^2
+            move = v0 * t + 1 / 2 * a * t * t
+            # 当前位移
+            current += move
+            # 加入轨迹
+            track.append(round(move))
+        return track
+
+    def move_to_gap(self, slider, track):
+        """
+        拖动滑块到缺口处
+        :param slider: 滑块
+        :param track: 轨迹
+        :return:
+        """
+        ActionChains(self.driver).click_and_hold(slider).perform()
+        for x in track:
+            ActionChains(self.driver).move_by_offset(xoffset=x, yoffset=0).perform()
+            time.sleep(0.1 * random.random())
+        ActionChains(self.driver).release().perform()
+
+    def get_slider(self):
+        """
+        获取滑块
+        :return: 滑块对象
+        """
+        slider = self.wait.until(expected_conditions.element_to_be_clickable((By.CLASS_NAME, 'geetest_slider_button')))
+        return slider
+
+    def is_similar_color(self, x_pixel, y_pixel):
+        """
+        判断颜色是否相近
+        :param x_pixel:
+        :param y_pixel:
+        :return:
+        """
+        for i, pixel in enumerate(x_pixel):
+            if abs(y_pixel[i] - pixel) > 50:
+                return False
+        return True
+
+    def get_offset_distance(self, cut_image, full_image):
+        """
+        计算距离
+        :param cut_image:
+        :param full_image:
+        :return:
+        """
+        for x in range(cut_image.width):
+            for y in range(cut_image.height):
+                cpx = cut_image.getpixel((x, y))
+                fpx = full_image.getpixel((x, y))
+                if not self.is_similar_color(cpx, fpx):
+                    img = cut_image.crop((x, y, x + 50, y + 40))
+                    # 保存一下计算出来位置图片，看看是不是缺口部分
+                    img.save('gap.png')
+                    return x
+
+    def crack(self):
+        """
+        验证操作
+        :return:
+        """
+        full_path = 'full.jpg'
+        cut_path = '{cut.jpg'
+        # 保存原始图片
+        self.save_img(full_path, 'geetest_canvas_fullbg')
+        # 保存缺口图片
+        self.save_img(cut_path, 'geetest_canvas_bg')
+        full_image = Image.open(full_path)
+        cut_image = Image.open(cut_path)
+        # 计算滑动距离
+        distance = self.get_offset_distance(cut_image, full_image)
+        # 减去缺口位移
+        distance -= self.border
+        # 获取滑块对象
+        slider = self.get_slider()
+        # 模拟人为滑动轨迹
+        track = self.get_track(distance)
+        # 拖动滑块
+        self.move_to_gap(slider, track)
+        time.sleep(2)
+        try:
+            track = self.get_track(distance - 65)
+            self.move_to_gap(slider, track)
+        except Exception:
+            pass

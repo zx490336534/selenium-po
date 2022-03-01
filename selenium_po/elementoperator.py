@@ -25,6 +25,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 class Locator:
     def __init__(self, element, wait_sec=3, by_type='id', locator_name='', desc=''):
+        """
+
+        @param element: 定位语句
+        @param wait_sec: 等待时间 默认3秒
+        @param by_type: 定位方式
+        @param locator_name: 变量名
+        @param desc: 描述
+        """
         self.element = element
         self.wait_sec = wait_sec
         self.by_type = by_type
@@ -32,7 +40,10 @@ class Locator:
         self.desc = desc
 
     def __str__(self):
-        return f'{self.desc}:(By{self.by_type},element:{self.element})'
+        return f'{self.desc}:(By:{self.by_type},element:{self.element})'
+
+    def __repr__(self):
+        return f'{self.desc}'
 
 
 class ElementOperator:
